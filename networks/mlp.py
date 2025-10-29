@@ -35,6 +35,7 @@ class MLP(nn.Sequential):
         hidden_dims: tuple[int] | list[int],
         activation: str = "elu",
         last_activation: str | None = None,
+        last_layer_XU_gain: float | None = None,
     ):
         """Initialize the MLP.
 
@@ -46,6 +47,8 @@ class MLP(nn.Sequential):
             activation: Activation function. Defaults to "elu".
             last_activation: Activation function of the last layer. Defaults to None,
                 in which case the last layer is linear.
+            last_layer_XU_gain: If specified, initializes the last layer using Xavier Uniform initialization
+                with the given gain. Also initializes the bias to zero.
         """
         super().__init__()
 
@@ -73,6 +76,12 @@ class MLP(nn.Sequential):
             # add a layer to reshape the output to the desired shape
             layers.append(nn.Linear(hidden_dims_processed[-1], total_out_dim))
             layers.append(nn.Unflatten(output_dim))
+
+        if last_layer_XU_gain is not None:
+            print(f'[INFO] Initializing last layer with Xavier Uniform initialization with gain: {last_layer_XU_gain}')
+            last_linear = layers[-1] if isinstance(layers[-1], nn.Linear) else layers[-2]
+            nn.init.xavier_uniform_(last_linear.weight, gain=last_layer_XU_gain)
+            nn.init.zeros_(last_linear.bias)
 
         # add last activation function if specified
         if last_activation_mod is not None:

@@ -27,6 +27,7 @@ class ActorCritic(nn.Module):
         activation="elu",
         init_noise_std=1.0,
         noise_std_type: str = "scalar",
+        last_actor_layer_XU_gain: float = None,
         **kwargs,
     ):
         if kwargs:
@@ -48,7 +49,7 @@ class ActorCritic(nn.Module):
             num_critic_obs += obs[obs_group].shape[-1]
 
         # actor
-        self.actor = MLP(num_actor_obs, num_actions, actor_hidden_dims, activation)
+        self.actor = MLP(num_actor_obs, num_actions, actor_hidden_dims, activation, last_layer_XU_gain=last_actor_layer_XU_gain)
         # actor observation normalization
         self.actor_obs_normalization = actor_obs_normalization
         if actor_obs_normalization:
